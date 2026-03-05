@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Línea del Tiempo: Historia de Internet</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Roboto+Mono:wght@300;400;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00d4ff;
+            --secondary: #ff006e;
+            --accent: #ffbe0b;
+            --dark: #0a0e27;
+            --darker: #050817;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background: var(--darker);
+            color: #fff;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* Fondo animado de partículas */
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        /* Header épico */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 0, 110, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .glitch {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(3rem, 10vw, 6rem);
+            font-weight: 900;
+            text-transform: uppercase;
+            position: relative;
+            text-shadow: 0.05em 0 0 rgba(255,0,0,0.75),
+                        -0.025em -0.05em 0 rgba(0,255,0,0.75),
+                        0.025em 0.05em 0 rgba(0,0,255,0.75);
+            animation: glitch 2s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 100% { text-shadow: 0.05em 0 0 rgba(255,0,0,0.75), -0.05em -0.025em 0 rgba(0,255,0,0.75), -0.025em 0.05em 0 rgba(0,0,255,0.75); }
+            14% { text-shadow: 0.05em 0 0 rgba(255,0,0,0.75), -0.05em -0.025em 0 rgba(0,255,0,0.75), -0.025em 0.05em 0 rgba(0,0,255,0.75); }
+            15% { text-shadow: -0.05em -0.025em 0 rgba(255,0,0,0.75), 0.025em 0.025em 0 rgba(0,255,0,0.75), -0.05em -0.05em 0 rgba(0,0,255,0.75); }
+            49% { text-shadow: -0.05em -0.025em 0 rgba(255,0,0,0.75), 0.025em 0.025em 0 rgba(0,255,0,0.75), -0.05em -0.05em 0 rgba(0,0,255,0.75); }
+            50% { text-shadow: 0.025em 0.05em 0 rgba(255,0,0,0.75), 0.05em 0 0 rgba(0,255,0,0.75), 0 -0.05em 0 rgba(0,0,255,0.75); }
+            99% { text-shadow: 0.025em 0.05em 0 rgba(255,0,0,0.75), 0.05em 0 0 rgba(0,255,0,0.75), 0 -0.05em 0 rgba(0,0,255,0.75); }
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-top: 1rem;
+            letter-spacing: 0.3em;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.5s forwards;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            animation: bounce 2s infinite;
+            cursor: pointer;
+        }
+
+        .scroll-indicator span {
+            display: block;
+            width: 20px;
+            height: 20px;
+            border-bottom: 2px solid var(--primary);
+            border-right: 2px solid var(--primary);
+            transform: rotate(45deg);
+            margin: -10px;
+            animation: scrollDown 2s infinite;
+        }
+
+        @keyframes scrollDown {
+            0% { opacity: 0; transform: rotate(45deg) translate(-20px, -20px); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: rotate(45deg) translate(20px, 20px); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Línea del tiempo principal */
+        .timeline-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 100px 20px;
+            position: relative;
+        }
+
+        .timeline-line {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary), var(--accent));
+            top: 0;
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+        }
+
+        .timeline-progress {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 0%;
+            background: #fff;
+            top: 0;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.8);
+            transition: height 0.1s ease;
+        }
+
+        .era {
+            margin-bottom: 100px;
+            position: relative;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 0.8s ease;
+        }
+
+        .era.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .era-header {
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+
+        .era-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            position: relative;
+        }
+
+        .era-year {
+            font-size: 1rem;
+            color: var(--accent);
+            letter-spacing: 0.5em;
+            margin-top: 10px;
+        }
+
+        /* Eventos individuales */
+        .event {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 80px;
+            position: relative;
+        }
+
+        .event:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .event-content {
+            width: 45%;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .event-content:hover {
+            transform: scale(1.05);
+            border-color: var(--primary);
+            box-shadow: 0 10px 40px rgba(0, 212, 255, 0.3);
+        }
+
+        .event-content::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 20px;
+            height: 20px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        .event:nth-child(odd) .event-content::before {
+            right: -60px;
+        }
+
+        .event:nth-child(even) .event-content::before {
+            left: -60px;
+        }
+
+        .event-date {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        .event-title {
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .event-description {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        .event-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag {
+            background: rgba(0, 212, 255, 0.2);
+            color: var(--primary);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--primary);
+        }
+
+        .event-image {
+            width: 45%;
+            height: 300px;
+            background: var(--glass);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .event-image::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s;
+        }
+
+        .event:hover .event-image::before {
+            left: 100%;
+        }
+
+        /* Modal de detalles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1f3a 0%, #0a0e27 100%);
+            border: 2px solid var(--primary);
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+            padding: 40px;
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.3);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--primary);
+            transition: transform 0.3s;
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg);
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+
+        .modal-body {
+            line-height: 1.8;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .modal-body h3 {
+            color: var(--accent);
+            margin: 20px 0 10px 0;
+        }
+
+        .modal-body ul {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .modal-body li {
+            margin-bottom: 8px;
+        }
+
+        .fun-fact {
+            background: rgba(255, 190, 11, 0.1);
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .fun-fact::before {
+            content: '💡 ';
+            font-size: 1.2rem;
+        }
+
+        /* Easter Egg - Konami Code */
+        .konami-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: linear-gradient(45deg, #ff006e, #8338ec);
+            padding: 40px;
+            border-radius: 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            text-align: center;
+            z-index: 2000;
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .konami-message.show {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .timeline-line {
+                left: 30px;
+            }
+
+            .event {
+                flex-direction: column !important;
+                margin-left: 60px;
+            }
+
+            .event-content, .event-image {
+                width: 100%;
+            }
+
+            .event-content::before {
+                left: -40px !important;
+                right: auto !important;
+            }
+
+            .event-image {
+                margin-top: 20px;
+                height: 200px;
+            }
+        }
+
+        /* Animación de carga inicial */
+        .loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--darker);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s;
+        }
+
+        .loading.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loading-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: var(--primary);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Navegación rápida */
+        .quick-nav {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-dot:hover, .nav-dot.active {
+            background: var(--primary);
+            transform: scale(1.5);
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        .nav-dot::before {
+            content: attr(data-year);
+            position: absolute;
+            right: 25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: var(--primary);
+            opacity: 0;
+            transition: opacity 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-dot:hover::before {
+            opacity: 1;
+        }
+
+        @media (max-width: 768px) {
+            .quick-nav { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Pantalla de carga -->
+    <div class="loading" id="loading">
+        <div class="loading-text">CONECTANDO...</div>
+    </div>
+
+    <!-- Canvas de fondo -->
+    <canvas id="canvas-bg"></canvas>
+
+    <!-- Navegación rápida -->
+    <div class="quick-nav">
+        <div class="nav-dot active" data-year="1969" onclick="scrollToEra(0)"></div>
+        <div class="nav-dot" data-year="1983" onclick="scrollToEra(1)"></div>
+        <div class="nav-dot" data-year="1989" onclick="scrollToEra(2)"></div>
+        <div class="nav-dot" data-year="1998" onclick="scrollToEra(3)"></div>
+        <div class="nav-dot" data-year="2004" onclick="scrollToEra(4)"></div>
+        <div class="nav-dot" data-year="2020" onclick="scrollToEra(5)"></div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <h1 class="glitch">INTERNET</h1>
+        <p class="subtitle">LA REVOLUCIÓN DIGITAL</p>
+        <div class="scroll-indicator" onclick="document.querySelector('.timeline-container').scrollIntoView({behavior: 'smooth'})">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </section>
+
+    <!-- Línea del Tiempo -->
+    <div class="timeline-container">
+        <div class="timeline-line"></div>
+        <div class="timeline-progress" id="progress"></div>
+
+        <!-- Era 1: Los Orígenes -->
+        <div class="era" data-year="1969">
+            <div class="era-header">
+                <h2 class="era-title">LOS ORÍGENES</h2>
+                <p class="era-year">1969 - 1982</p>
+            </div>
+
+            <div class="event" onclick="openModal('arpanet')">
+                <div class="event-content">
+                    <div class="event-date">1969</div>
+                    <h3 class="event-title">Nace ARPANET</h3>
+                    <p class="event-description">
+                        El 29 de octubre de 1969, el primer mensaje se envía entre UCLA y Stanford. 
+                        La red que daría origen a Internet estaba en marcha.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">ARPANET</span>
+                        <span class="tag">UCLA</span>
+                        <span class="tag">Cold War</span>
+                    </div>
+                </div>
+                <div class="event-image">🖥️</div>
+            </div>
+
+            <div class="event" onclick="openModal('email')">
+                <div class="event-content">
+                    <div class="event-date">1971</div>
+                    <h3 class="event-title">Primer Email</h3>
+                    <p class="event-description">
+                        Ray Tomlinson envía el primer correo electrónico y elige el símbolo @ 
+                        para separar usuario de dominio.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">Email</span>
+                        <span class="tag">Ray Tomlinson</span>
+                        <span class="tag">@</span>
+                    </div>
+                </div>
+                <div class="event-image">📧</div>
+            </div>
+
+            <div class="event" onclick="openModal('tcp')">
+                <div class="event-content">
+                    <div class="event-date">1974</div>
+                    <h3 class="event-title">Protocolo TCP</h3>
+                    <p class="event-description">
+                        Vint Cerf y Bob Kahn publican el protocolo TCP, permitiendo que diferentes 
+                        redes se comuniquen entre sí.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">TCP/IP</span>
+                        <span class="tag">Vint Cerf</span>
+                        <span class="tag">Protocolos</span>
+                    </div>
+                </div>
+                <div class="event-image">🌐</div>
+            </div>
+        </div>
+
+        <!-- Era 2: La Red se Expande -->
+        <div class="era" data-year="1983">
+            <div class="era-header">
+                <h2 class="era-title">LA RED SE EXPANDE</h2>
+                <p class="era-year">1983 - 1989</p>
+            </div>
+
+            <div class="event" onclick="openModal('dns')">
+                <div class="event-content">
+                    <div class="event-date">1983</div>
+                    <h3 class="event-title">Sistema DNS</h3>
+                    <p class="event-description">
+                        Se implementa el Domain Name System, traduciendo nombres legibles por humanos 
+                        a direcciones IP numéricas.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">DNS</span>
+                        <span class="tag">Dominios</span>
+                        <span class="tag">Paul Mockapetris</span>
+                    </div>
+                </div>
+                <div class="event-image">📖</div>
+            </div>
+
+            <div class="event" onclick="openModal('desktop')">
+                <div class="event-content">
+                    <div class="event-date">1984</div>
+                    <h3 class="event-title">Apple Macintosh</h3>
+                    <p class="event-description">
+                        Apple lanza la Mac, popularizando la interfaz gráfica y acercando 
+                        las computadoras al público general.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">Apple</span>
+                        <span class="tag">GUI</span>
+                        <span class="tag">Macintosh</span>
+                    </div>
+                </div>
+                <div class="event-image">🍎</div>
+            </div>
+        </div>
+
+        <!-- Era 3: La World Wide Web -->
+        <div class="era" data-year="1989">
+            <div class="era-header">
+                <h2 class="era-title">WORLD WIDE WEB</h2>
+                <p class="era-year">1989 - 1998</p>
+            </div>
+
+            <div class="event" onclick="openModal('www')">
+                <div class="event-content">
+                    <div class="event-date">1989</div>
+                    <h3 class="event-title">Tim Berners-Lee inventa la Web</h3>
+                    <p class="event-description">
+                        En el CERN, propone un sistema de hipertexto para compartir información. 
+                        Nacen HTTP, HTML y la URL.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">WWW</span>
+                        <span class="tag">CERN</span>
+                        <span class="tag">HTML</span>
+                    </div>
+                </div>
+                <div class="event-image">🕸️</div>
+            </div>
+
+            <div class="event" onclick="openModal('mosaic')">
+                <div class="event-content">
+                    <div class="event-date">1993</div>
+                    <h3 class="event-title">Navegador Mosaic</h3>
+                    <p class="event-description">
+                        El primer navegador popular con imágenes. Marc Andreessen lo crea en NCSA, 
+                        revolucionando la experiencia web.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">Mosaic</span>
+                        <span class="tag">NCSA</span>
+                        <span class="tag">Browser</span>
+                    </div>
+                </div>
+                <div class="event-image">🖼️</div>
+            </div>
+
+            <div class="event" onclick="openModal('netscape')">
+                <div class="event-content">
+                    <div class="event-date">1994</div>
+                    <h3 class="event-title">Netscape Navigator</h3>
+                    <p class="event-description">
+                        Marc Andreessen funda Netscape. La "Guerra de los Navegadores" comienza 
+                        y JavaScript nace en 1995.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">Netscape</span>
+                        <span class="tag">JavaScript</span>
+                        <span class="tag">Brendan Eich</span>
+                    </div>
+                </div>
+                <div class="event-image">🧭</div>
+            </div>
+
+            <div class="event" onclick="openModal('google')">
+                <div class="event-content">
+                    <div class="event-date">1998</div>
+                    <h3 class="event-title">Google</h3>
+                    <p class="event-description">
+                        Larry Page y Sergey Brin fundan Google en un garaje. Su algoritmo PageRank 
+                        revoluciona la búsqueda.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">Google</span>
+                        <span class="tag">Search</span>
+                        <span class="tag">PageRank</span>
+                    </div>
+                </div>
+                <div class="event-image">🔍</div>
+            </div>
+        </div>
+
+        <!-- Era 4: La Burbuja y la Recuperación -->
+        <div class="era" data-year="1998">
+            <div class="era-header">
+                <h2 class="era-title">LA BURBUJA DOT-COM</h2>
+                <p class="era-year">1998 - 2004</p>
+            </div>
+
+            <div class="event" onclick="openModal('wikipedia')">
+                <div class="event-content">
+                    <div class="event-date">2001</div>
+                    <h3 class="event-title">Wikipedia</h3>
+                    <p class="event-description">
+                        Jimmy Wales lanza la enciclopedia colaborativa. El conocimiento libre 
+                        democratiza el acceso a la información.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">Wikipedia</span>
+                        <span class="tag">Wiki</span>
+                        <span class="tag">Open Knowledge</span>
+                    </div>
+                </div>
+                <div class="event-image">📚</div>
+            </div>
+
+            <div class="event" onclick="openModal('bittorrent')">
+                <div class="event-content">
+                    <div class="event-date">2001</div>
+                    <h3 class="event-title">BitTorrent</h3>
+                    <p class="event-description">
+                        Bram Cohen crea el protocolo P2P que revoluciona el intercambio de archivos, 
+                        descentralizando la distribución.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">P2P</span>
+                        <span class="tag">BitTorrent</span>
+                        <span class="tag">Decentralization</span>
+                    </div>
+                </div>
+                <div class="event-image">🔄</div>
+            </div>
+        </div>
+
+        <!-- Era 5: Web 2.0 y Sociedad -->
+        <div class="era" data-year="2004">
+            <div class="era-header">
+                <h2 class="era-title">WEB 2.0 & SOCIAL</h2>
+                <p class="era-year">2004 - 2015</p>
+            </div>
+
+            <div class="event" onclick="openModal('facebook')">
+                <div class="event-content">
+                    <div class="event-date">2004</div>
+                    <h3 class="event-title">Facebook</h3>
+                    <p class="event-description">
+                        Mark Zuckerberg lanza "TheFacebook" en Harvard. Comienza la era de las 
+                        redes sociales masivas.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">Facebook</span>
+                        <span class="tag">Social Network</span>
+                        <span class="tag">Web 2.0</span>
+                    </div>
+                </div>
+                <div class="event-image">👥</div>
+            </div>
+
+            <div class="event" onclick="openModal('youtube')">
+                <div class="event-content">
+                    <div class="event-date">2005</div>
+                    <h3 class="event-title">YouTube</h3>
+                    <p class="event-description">
+                        Chad Hurley, Steve Chen y Jawed Karim crean la plataforma de video que 
+                        cambiaría el entretenimiento global.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">YouTube</span>
+                        <span class="tag">Video</span>
+                        <span class="tag">Streaming</span>
+                    </div>
+                </div>
+                <div class="event-image">🎥</div>
+            </div>
+
+            <div class="event" onclick="openModal('twitter')">
+                <div class="event-content">
+                    <div class="event-date">2006</div>
+                    <h3 class="event-title">Twitter</h3>
+                    <p class="event-description">
+                        Jack Dorsey envía el primer tweet. Los 140 caracteres revolucionan 
+                        la comunicación en tiempo real.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">Twitter</span>
+                        <span class="tag">Microblogging</span>
+                        <span class="tag">Real-time</span>
+                    </div>
+                </div>
+                <div class="event-image">🐦</div>
+            </div>
+
+            <div class="event" onclick="openModal('iphone')">
+                <div class="event-content">
+                    <div class="event-date">2007</div>
+                    <h3 class="event-title">iPhone</h3>
+                    <p class="event-description">
+                        Steve Jobs presenta el iPhone. Internet sale de los escritorios y 
+                        entra en nuestros bolsillos.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">iPhone</span>
+                        <span class="tag">Mobile</span>
+                        <span class="tag">App Store</span>
+                    </div>
+                </div>
+                <div class="event-image">📱</div>
+            </div>
+        </div>
+
+        <!-- Era 6: Era Moderna -->
+        <div class="era" data-year="2020">
+            <div class="era-header">
+                <h2 class="era-title">ERA MODERNA</h2>
+                <p class="era-year">2015 - PRESENTE</p>
+            </div>
+
+            <div class="event" onclick="openModal('ai')">
+                <div class="event-content">
+                    <div class="event-date">2022</div>
+                    <h3 class="event-title">Revolución IA</h3>
+                    <p class="event-description">
+                        ChatGPT y modelos de lenguaje transforman cómo interactuamos con 
+                        la información. La Web se vuelve conversacional.
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">AI</span>
+                        <span class="tag">ChatGPT</span>
+                        <span class="tag">LLM</span>
+                    </div>
+                </div>
+                <div class="event-image">🤖</div>
+            </div>
+
+            <div class="event" onclick="openModal('web3')">
+                <div class="event-content">
+                    <div class="event-date">2023</div>
+                    <h3 class="event-title">Web3 & Metaverso</h3>
+                    <p class="event-description">
+                        Blockchain, NFTs y realidad virtual apuntan a una web descentralizada 
+                        e inmersiva. ¿El futuro o burbuja?
+                    </p>
+                    <div class="event-tags">
+                        <span class="tag">Web3</span>
+                        <span class="tag">Blockchain</span>
+                        <span class="tag">Metaverse</span>
+                    </div>
+                </div>
+                <div class="event-image">🥽</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="modal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <h2 class="modal-title" id="modal-title">Título</h2>
+            <div class="modal-body" id="modal-body">
+                Contenido
+            </div>
+        </div>
+    </div>
+
+    <!-- Easter Egg Message -->
+    <div class="konami-message" id="konami">
+        🎮 ¡CÓDIGO KONAMI ACTIVADO!<br>
+        <small>Eres un verdadero geek de Internet</small>
+    </div>
+
+    <script>
+        // Datos detallados para los modales
+        const modalData = {
+            arpanet: {
+                title: "ARPANET (1969)",
+                content: `
+                    <p>El <strong>29 de octubre de 1969</strong> a las 22:30 horas, Charley Kline, estudiante de UCLA, 
+                    intentó enviar el mensaje "LOGIN" al SDS 940 de Stanford. El sistema colapsó tras transmitir "LO".</p>
+                    
+                    <h3>Contexto Histórico</h3>
+                    <ul>
+                        <li>Proyecto de la <strong>ARPA</strong> (Advanced Research Projects Agency) del Departamento de Defensa de EE.UU.</li>
+                        <li>Respuesta a la <strong>Guerra Fría</strong> y al lanzamiento del Sputnik soviético</li>
+                        <li>Objetivo: crear una red de comunicación descentralizada que sobreviviera un ataque nuclear</li>
+                        <li>Basada en la teoría de <strong>conmutación de paquetes</strong> de Paul Baran y Donald Davies</li>
+                    </ul>
+
+                    <div class="fun-fact">
+                        El primer mensaje completo fue "LO" porque el sistema se bloqueó. 
+                        Técnicamente, el primer mensaje fue "LO and behold!" (¡Mira por dónde!).
+                    </div>
+
+                    <h3>Primeros Nodos (1969-1971)</h3>
+                    <ul>
+                        <li>UCLA (Septiembre 1969)</li>
+                        <li>Stanford Research Institute (Octubre 1969)</li>
+                        <li>UC Santa Barbara (Noviembre 1969)</li>
+                        <li>University of Utah (Diciembre 1969)</li>
+                    </ul>
+                `
+            },
+            email: {
+                title: "El Primer Email (1971)",
+                content: `
+                    <p><strong>Ray Tomlinson</strong> (1941-2016) envió el primer correo entre dos máquinas DEC PDP-10 
+                    conectadas a ARPANET en 1971.</p>
+
+                    <h3>La Elección del @</h3>
+                    <p>Tomlinson necesitaba un símbolo que no apareciera en nombres de usuarios para separar 
+                    usuario@host. Elegió @ porque:</p>
+                    <ul>
+                        <li>Raramente usado en nombres</li>
+                        <li>Significa "at" (en) en inglés</li>
+                        <li>Estaba en el teclado del Model 33 Teletype</li>
+                    </ul>
+
+                    <div class="fun-fact">
+                        Tomlinson no guardó el primer mensaje. Dice que fue algo como "QWERTYUIOP" 
+                        o simplemente probando el teclado. Nunca imaginó que el email se volvería tan importante.
+                    </div>
+
+                    <h3>Impacto</h3>
+                    <p>Para 1973, el 75% del tráfico de ARPANET era email. El correo electrónico se convirtió 
+                    en la "killer app" que demostró la utilidad de la red.</p>
+                `
+            },
+            tcp: {
+                title: "TCP/IP (1974)",
+                content: `
+                    <p><strong>Vint Cerf</strong> y <strong>Bob Kahn</strong> publicaron "A Protocol for Packet Network Intercommunication" 
+                    en mayo de 1974, describiendo lo que se convertiría en TCP/IP.</p>
+
+                    <h3>El Problema de la Interconexión</h3>
+                    <p>ARPANET conectaba computadoras similares, pero diferentes redes (satelitales, de radio, etc.) 
+                    no podían comunicarse. TCP/IP resolvió esto mediante:</p>
+                    <ul>
+                        <li><strong>Independencia del hardware</strong>: Funciona sobre cualquier tecnología</li>
+                        <li><strong>Direccionamiento universal</strong>: Cada nodo tiene una IP única</li>
+                        <li><strong>Encaminamiento dinámico</strong>: Los paquetes encuentran su propio camino</li>
+                        <li><strong>Fiabilidad</strong>: TCP garantiza la entrega ordenada</li>
+                    </ul>
+
+                    <h3>Adopción Universal</h3>
+                    <ul>
+                        <li>1983: ARPANET adopta TCP/IP (1 de enero)</li>
+                        <li>1989: OSI (competidor) pierde frente a TCP/IP</li>
+                        <li>Hoy: +5,000 millones de dispositivos conectados</li>
+                    </ul>
+
+                    <div class="fun-fact">
+                        Vint Cerf es conocido como el "Padre de Internet". En 2021 sigue trabajando en 
+                        interplanetary Internet (IPN) para comunicaciones espaciales.
+                    </div>
+                `
+            },
+            dns: {
+                title: "Sistema DNS (1983)",
+                content: `
+                    <p><strong>Paul Mockapetris</strong> diseñó el Domain Name System en 1983, reemplazando el archivo 
+                    HOSTS.TXT que se distribuía manualmente.</p>
+
+                    <h3>¿Por qué era necesario?</h3>
+                    <p>El archivo HOSTS.TXT crecía exponencialmente:</p>
+                    <ul>
+                        <li>1982: ~200 hosts en ARPANET</li>
+                        <li>1983: ~500 hosts</li>
+                        <li>El archivo se actualizaba semanalmente por FTP</li>
+                        <li>Colisiones de nombres eran frecuentes</li>
+                    </ul>
+
+                    <h3>Estructura Jerárquica</h3>
+                    <p>DNS organiza los nombres en una estructura de árbol invertido:</p>
+                    <ul>
+                        <li><strong>Root (.)</strong>: 13 servidores raíz gestionados por ICANN</li>
+                        <li><strong>TLDs</strong>: .com, .org, .net, .es, etc.</li>
+                        <li><strong>Segundo nivel</strong>: google, wikipedia, etc.</li>
+                        <li><strong>Subdominios</strong>: www, mail, ftp, etc.</li>
+                    </ul>
+
+                    <div class="fun-fact">
+                        El primer nombre de dominio registrado fue <strong>symbolics.com</strong> el 15 de marzo de 1985. 
+                        Aún existe como museo histórico.
+                    </div>
+                `
+            },
+            www: {
+                title: "World Wide Web (1989)",
+                content: `
+                    <p><strong>Tim Berners-Lee</strong>, científico del CERN, propuso la Web en marzo de 1989. 
+                    Su jefe llamó al proyecto "vago pero emocionante" en el margen del documento.</p>
+
+                    <h3>Los Tres Pilares</h3>
+                    <ul>
+                        <li><strong>HTML</strong>: Lenguaje de marcado para documentos</li>
+                        <li><strong>HTTP</strong>: Protocolo de transferencia (puerto 80)</li>
+                        <li><strong>URL</strong>: Sistema de direccionamiento universal</li>
+                    </ul>
+
+                    <h3>Primeros Hitos</h3>
+                    <ul>
+                        <li>Diciembre 1990: Primer servidor web (httpd) y navegador (WorldWideWeb)</li>
+                        <li>1991: Primera página web: info.cern.ch</li>
+                        <li>1993: CERN libera el código fuente al dominio público</li>
+                    </ul>
+
+                    <h3>Primer Navegador</h3>
+                    <p>"WorldWideWeb" (luego Nexus) funcionaba solo en NeXTSTEP. Era WYSIWYG: 
+                    podías editar páginas directamente en el navegador.</p>
+
+                    <div class="fun-fact">
+                        El slash "/" en URLs fue un error. Berners-Lee pensó que necesitaba separar 
+                        el protocolo del path, pero no era necesario. "La barra ha costado años de 
+                        trabajo y billetes impresos" - Tim Berners-Lee, 2000.
+                    </div>
+                `
+            },
+            mosaic: {
+                title: "Navegador Mosaic (1993)",
+                content: `
+                    <p><strong>Marc Andreessen</strong> y <strong>Eric Bina</strong> desarrollaron Mosaic en la NCSA 
+                    (National Center for Supercomputing Applications) en 1993.</p>
+
+                    <h3>Revolución Visual</h3>
+                    <p>Mosaic fue el primer navegador popular en soportar:</p>
+                    <ul>
+                        <li>Imágenes <strong>inline</strong> (dentro del texto, no en ventanas separadas)</li>
+                        <li>Interfaz gráfica point-and-click</li>
+                        <li>Versiones para Windows, Mac y Unix</li>
+                        <li>Bookmarks (favoritos)</li>
+                    </ul>
+
+                    <h3>Impacto Cultural</h3>
+                    <p>Antes de Mosaic:</p>
+                    <ul>
+                        <li>La Web era texto puro para académicos</li>
+                        <li>Gopher y FTP eran más populares</li>
+                    </ul>
+                    <p>Después de Mosaic:</p>
+                    <ul>
+                        <li>Web tráfico creció 10,000% en 1993</li>
+                        <li>Nació la cultura de la "surfing the web"</li>
+                        <li>Internet se volvió mainstream</li>
+                    </ul>
+
+                    <div class="fun-fact">
+                        Andreessen se graduó, se mudó a California y fundó Netscape. 
+                        Mosaic NCSA lo demandó, resultando en un acuerdo de $3 millones.
+                    </div>
+                `
+            },
+            google: {
+                title: "Google (1998)",
+                content: `
+                    <p><strong>Larry Page</strong> y <strong>Sergey Brin</strong>, estudiantes de Stanford, 
+                    fundaron Google el 4 de septiembre de 1998 en un garaje en Menlo Park.</p>
+
+                    <h3>El Algoritmo PageRank</h3>
+                    <p>Inspirado en citas académicas, PageRank mide la importancia de una página 
+                    por la cantidad y calidad de enlaces que apuntan a ella:</p>
+                    <ul>
+                        <li>Links = votos de confianza</li>
+                        <li>Links de sitios importantes valen más</li>
+                        <li>Matemáticamente: autovectores de matrices de adyacencia</li>
+                    </ul>
+
+                    <h3>Primeros Datos</h3>
+                    <ul>
+                        <li>Primer index: 25 millones de páginas</li>
+                        <li>Primer servidor: Lego armado por ellos mismos</li>
+                        <li>Nombre: juego de palabras con "googol" (10^100)</li>
+                    </ul>
+
+                    <div class="fun-fact">
+                        En 1999, Page y Brin intentaron vender Google por $1 millón a Excite. 
+                        El CEO George Bell rechazó la oferta. Hoy Google vale ~$1.7 billones.
+                    </div>
+                `
+            },
+            facebook: {
+                title: "Facebook (2004)",
+                content: `
+                    <p><strong>Mark Zuckerberg</strong> lanzó "TheFacebook" el 4 de febrero de 2004 desde 
+                    su dormitorio en Harvard. Inicialmente solo para universidades.</p>
+
+                    <h3>Evolución Rápida</h3>
+                    <ul>
+                        <li>Feb 2004: Harvard only (1,200 usuarios en 24h)</li>
+                        <li>Mar 2004: MIT, Stanford, Yale</li>
+                        <li>Sep 2005: High schools</li>
+                        <li>Sep 2006: Abierto al público (+13 años)</li>
+                        <li>2008: 100 millones de usuarios</li>
+                        <li>2012: 1,000 millones (IPO)</li>
+                    </ul>
+
+                    <h3>Innovaciones Clave</h3>
+                    <ul>
+                        <li><strong>News Feed</strong> (2006): Agregación de contenido en tiempo real</li>
+                        <li><strong>Like button</strong> (2009): Microinteracción que define una era</li>
+                        <li><strong>Platform</strong> (2007): Apps de terceros (FarmVille, Spotify)</li>
+                    </ul>
+
+                    <div class="fun-fact">
+                        El nombre viene de los "face books" que Harvard distribuía con fotos de estudiantes. 
+                        Zuckerberg compró el dominio facebook.com por $200,000 en 2005.
+                    </div>
+                `
+            },
+            ai: {
+                title: "Revolución de la IA (2022+)",
+                content: `
+                    <p>El 30 de noviembre de 2022, <strong>OpenAI</strong> lanzó ChatGPT, alcanzando 
+                    100 millones de usuarios en 2 meses (récord histórico).</p>
+
+                    <h3>Contexto Tecnológico</h3>
+                    <ul>
+                        <li><strong>Transformers</strong> (2017): Arquitectura de Google que revolucionó NLP</li>
+                        <li><strong>GPT-3</strong> (2020): 175 mil millones de parámetros</li>
+                        <li><strong>ChatGPT</strong>: GPT-3.5 fine-tuned con RLHF (Reinforcement Learning from Human Feedback)</li>
+                    </ul>
+
+                    <h3>Impacto en la Web</h3>
+                    <ul>
+                        <li>Búsqueda conversacional (vs keywords)</li>
+                        <li>Generación de contenido automática</li>
+                        <li>Asistentes de programación (GitHub Copilot)</li>
+                        <li>Personalización extrema</li>
+                        <li>Desafíos: desinformación, copyright, privacidad</li>
+                    </ul>
+
+                    <div class="fun-fact">
+                        El entrenamiento de GPT-3 costó ~$4.6 millones en computación. 
+                        Se estima que GPT-4 costó más de $100 millones. La "carrera de la IA" 
+                        consume más energía que algunos países.
+                    </div>
+                `
+            }
+        };
+
+        // Inicialización
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('loading').classList.add('hidden');
+            }, 1500);
+            
+            initCanvas();
+            initScrollObserver();
+            initKonami();
+        });
+
+        // Canvas de partículas
+        function initCanvas() {
+            const canvas = document.getElementById('canvas-bg');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            const particles = [];
+            const particleCount = 100;
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * canvas.width;
+                    this.y = Math.random() * canvas.height;
+                    this.vx = (Math.random() - 0.5) * 0.5;
+                    this.vy = (Math.random() - 0.5) * 0.5;
+                    this.size = Math.random() * 2;
+                }
+
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+                }
+
+                draw() {
+                    ctx.fillStyle = 'rgba(0, 212, 255, 0.5)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            for (let i = 0; i < particleCount; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                particles.forEach(p => {
+                    p.update();
+                    p.draw();
+                });
+
+                // Conectar partículas cercanas
+                particles.forEach((p1, i) => {
+                    particles.slice(i + 1).forEach(p2 => {
+                        const dx = p1.x - p2.x;
+                        const dy = p1.y - p2.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+
+                        if (distance < 100) {
+                            ctx.strokeStyle = `rgba(0, 212, 255, ${0.2 * (1 - distance/100)})`;
+                            ctx.lineWidth = 1;
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    });
+                });
+
+                requestAnimationFrame(animate);
+            }
+
+            animate();
+
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        // Observer para animaciones de scroll
+        function initScrollObserver() {
+            const eras = document.querySelectorAll('.era');
+            const progress = document.getElementById('progress');
+            const navDots = document.querySelectorAll('.nav-dot');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        updateNavDots(entry.target);
+                    }
+                });
+            }, { threshold: 0.2 });
+
+            eras.forEach(era => observer.observe(era));
+
+            // Actualizar barra de progreso
+            window.addEventListener('scroll', () => {
+                const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+                const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+                const scrolled = (winScroll / height) * 100;
+                progress.style.height = scrolled + '%';
+            });
+        }
+
+        function updateNavDots(activeEra) {
+            const year = activeEra.getAttribute('data-year');
+            document.querySelectorAll('.nav-dot').forEach((dot, index) => {
+                dot.classList.remove('active');
+                if (dot.getAttribute('data-year') === year) {
+                    dot.classList.add('active');
+                }
+            });
+        }
+
+        function scrollToEra(index) {
+            const eras = document.querySelectorAll('.era');
+            if (eras[index]) {
+                eras[index].scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // Modal functions
+        function openModal(key) {
+            const data = modalData[key];
+            if (!data) return;
+            
+            document.getElementById('modal-title').textContent = data.title;
+            document.getElementById('modal-body').innerHTML = data.content;
+            document.getElementById('modal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(event) {
+            if (!event || event.target.id === 'modal' || event.target.className === 'modal-close') {
+                document.getElementById('modal').classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Easter Egg - Konami Code
+        function initKonami() {
+            const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+            let index = 0;
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === konamiCode[index]) {
+                    index++;
+                    if (index === konamiCode.length) {
+                        activateKonami();
+                        index = 0;
+                    }
+                } else {
+                    index = 0;
+                }
+            });
+        }
+
+        function activateKonami() {
+            const msg = document.getElementById('konami');
+            msg.classList.add('show');
+            
+            // Efecto de matrix en el fondo
+            document.body.style.filter = 'hue-rotate(90deg)';
+            
+            setTimeout(() => {
+                msg.classList.remove('show');
+                document.body.style.filter = 'none';
+            }, 3000);
+        }
+
+        // Cerrar modal con ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
